@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Judge Panel - AI Hackathon{% endblock %}
+{% block content %}
+  <section class="section">
+    <h2>Judge Panel</h2>
+    <p class="muted">Welcome, {{ current_user.name }}. Evaluate each registered project on the five judging parameters. Judges reward thinking about the problem over technical polish.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="num">{{ registrations|length }}</div><div>Total registrations</div></div>
+      <div class="stat"><div class="num">{{ pending }}</div><div>Pending evaluation</div></div>
+      <div class="stat"><div class="num">{{ completed }}</div><div>Completed by you</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Registrations to Evaluate</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reg. No.</th>
+            <th>Project</th>
+            <th>Type</th>
+            <th>Track</th>
+            <th>School / Leader</th>
+            <th>Team</th>
+            <th>Your status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in registrations %}
+            <tr>
+              <td><strong>{{ r.registration_number }}</strong></td>
+              <td>{{ r.problem_title }}</td>
+              <td>{{ r.team_type|capitalize }}</td>
+              <td>{{ r.track }}</td>
+              <td>{{ r.school_name }}<br><span class="muted">{{ r.leader_name }} (Class {{ r.leader_class }})</span></td>
+              <td>
+                {% set ms = members_by_reg.get(r.id, []) %}
+                {% if ms %}
+                  <ul style="margin:0; padding-left:1.1rem;">
+                    {% for m in ms %}<li>{{ m.member_name }} ({{ m.member_class }})</li>{% endfor %}
+                  </ul>
+                {% else %}
+                  <span class="muted">Solo</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if r.evaluation_id %}
+                  <span class="badge done">Evaluated</span><br>
+                  <span class="muted">Total: {{ r.total_score }}/{{ judging_parameters|length * 10 }}</span>
+                {% else %}
+                  <span class="badge pending">Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                <a class="btn small" href="{{ url_for('evaluate', registration_id=r.id) }}">
+                  {% if r.evaluation_id %}Update{% else %}Evaluate{% endif %}
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="muted">No registrations available yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Judging Parameters (1&ndash;10 each)</h3>
+    <div class="grid tracks">
+      {% for p in judging_parameters %}
+        <div class="card">
+          <h3>{{ loop.index }}. {{ p.label }}</h3>
+          <p class="muted">{{ p.description }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

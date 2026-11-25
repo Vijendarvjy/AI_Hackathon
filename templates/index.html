@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}AI Hackathon - Home{% endblock %}
+{% block content %}
+  <section class="hero">
+    <h2>Meri Samasya, Mera Samadhan (My Problem, My Solution)</h2>
+    <p>{{ theme_description }}</p>
+    <p>Students can participate <strong>solo</strong> or in a <strong>group</strong> of any size. Every registration receives a unique registration number.</p>
+    <div class="actions">
+      <a class="btn" href="{{ url_for('register') }}">Register Now</a>
+      <a class="btn secondary" href="{{ url_for('judge_login') }}">Judge Panel</a>
+      <a class="btn secondary" href="{{ url_for('admin_login') }}">Admin Login</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Tracks &amp; Example Problems</h2>
+    <div class="grid tracks">
+      {% for track in tracks %}
+        <div class="card">
+          <h3>{{ track.name }}</h3>
+          <p class="muted"><strong>Examples:</strong> {{ track.examples }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Judging Parameters</h2>
+    <p class="muted">Judges evaluate each project on five parameters (1&ndash;10 each). Thinking about the problem is valued over technical polish.</p>
+    <div class="grid tracks">
+      {% for p in judging_parameters %}
+        <div class="card">
+          <h3>{{ loop.index }}. {{ p.label }}</h3>
+          <p class="muted">{{ p.description }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

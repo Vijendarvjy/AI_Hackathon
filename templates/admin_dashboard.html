@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - AI Hackathon{% endblock %}
+{% block content %}
+  <section class="section">
+    <h2>Admin Dashboard</h2>
+    <p class="muted">Manage registrations, judges, and view evaluation results.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="num">{{ stats.total_registrations }}</div><div>Total registrations</div></div>
+      <div class="stat"><div class="num">{{ stats.solo }}</div><div>Solo</div></div>
+      <div class="stat"><div class="num">{{ stats.group }}</div><div>Group</div></div>
+      <div class="stat"><div class="num">{{ stats.evaluated }}</div><div>Teams evaluated (>=1 judge)</div></div>
+      <div class="stat"><div class="num">{{ stats.judges }}</div><div>Judge accounts</div></div>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="{{ url_for('admin_judges') }}">Manage Judges</a>
+      <a class="btn secondary" href="{{ url_for('index') }}">View Public Site</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Evaluation Results (by average total score)</h2>
+    <p class="muted">Scores are averaged across all judge evaluations submitted for each registration (max total {{ judging_parameters|length * 10 }}).</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reg. No.</th>
+            <th>Project</th>
+            <th>Type</th>
+            <th>Track</th>
+            <th>School / Leader</th>
+            <th>Judges</th>
+            <th>Avg Total</th>
+            <th>Avg: Problem</th>
+            <th>Avg: Solution</th>
+            <th>Avg: Creativity</th>
+            <th>Avg: Feasibility</th>
+            <th>Avg: Presentation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+            <tr>
+              <td><strong>{{ r.registration_number }}</strong></td>
+              <td>{{ r.problem_title }}</td>
+              <td>{{ r.team_type|capitalize }}</td>
+              <td>{{ r.track }}</td>
+              <td>{{ r.school_name }}<br><span class="muted">{{ r.leader_name }}</span></td>
+              <td>{{ r.eval_count or 0 }}</td>
+              <td>{% if r.avg_total is not none %}<strong>{{ "%.2f"|format(r.avg_total) }}</strong>{% else %}<span class="muted">—</span>{% endif %}</td>
+              <td>{{ "%.2f"|format(r.avg_problem_understanding) if r.avg_problem_understanding is not none else "—" }}</td>
+              <td>{{ "%.2f"|format(r.avg_solution_relevance) if r.avg_solution_relevance is not none else "—" }}</td>
+              <td>{{ "%.2f"|format(r.avg_creativity) if r.avg_creativity is not none else "—" }}</td>
+              <td>{{ "%.2f"|format(r.avg_feasibility) if r.avg_feasibility is not none else "—" }}</td>
+              <td>{{ "%.2f"|format(r.avg_presentation) if r.avg_presentation is not none else "—" }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="12" class="muted">No registrations yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>All Registrations</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reg. No.</th>
+            <th>Type</th>
+            <th>Track</th>
+            <th>Project title</th>
+            <th>Problem &amp; solution</th>
+            <th>School</th>
+            <th>Leader</th>
+            <th>Members</th>
+            <th>Contact</th>
+            <th>Registered at (UTC)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in registrations %}
+            <tr>
+              <td><strong>{{ reg.registration_number }}</strong></td>
+              <td>{{ reg.team_type|capitalize }}</td>
+              <td>{{ reg.track }}</td>
+              <td>{{ reg.problem_title }}</td>
+              <td>{{ reg.problem_description }}</td>
+              <td>{{ reg.school_name }}</td>
+              <td>{{ reg.leader_name }} (Class {{ reg.leader_class }})</td>
+              <td>
+                {% set ms = members_by_reg.get(reg.id, []) %}
+                {% if ms %}
+                  <ul style="margin:0; padding-left:1.1rem;">
+                    {% for m in ms %}<li>{{ m.member_name }} (Class {{ m.member_class }})</li>{% endfor %}
+                  </ul>
+                {% else %}
+                  <span class="muted">Solo</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if reg.leader_contact %}{{ reg.leader_contact }}<br>{% endif %}
+                {% if reg.leader_email %}{{ reg.leader_email }}{% endif %}
+                {% if not reg.leader_contact and not reg.leader_email %}<span class="muted">—</span>{% endif %}
+              </td>
+              <td>{{ reg.created_at }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="10" class="muted">No registrations yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

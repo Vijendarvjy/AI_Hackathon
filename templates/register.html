@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Student Registration - AI Hackathon{% endblock %}
+{% block content %}
+  <section class="section">
+    <h2>Student Registration</h2>
+    <p class="muted">Register as <strong>solo</strong> or as a <strong>group</strong> of any size. A unique registration number will be generated after submission.</p>
+
+    {% set member_ns = namespace(indices=[]) %}
+    {% for key in form.keys() %}
+      {% if key.startswith('member_') and key.endswith('_name') %}
+        {% set middle = key[7:-5] %}
+        {% if middle.isdigit() %}
+          {% set member_ns.indices = member_ns.indices + [middle|int] %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    {% set member_indices = member_ns.indices|unique|sort %}
+    {% if not member_indices %}
+      {% set member_indices = [2] %}
+    {% endif %}
+
+    <form method="post" class="card">
+      <fieldset>
+        <legend>Participation Details</legend>
+        <div class="inline">
+          <div class="field">
+            <label for="team_type">Registration type *</label>
+            <select id="team_type" name="team_type" required>
+              <option value="">-- Select --</option>
+              <option value="solo" {% if form.get('team_type') == 'solo' %}selected{% endif %}>Solo</option>
+              <option value="group" {% if form.get('team_type') == 'group' %}selected{% endif %}>Group</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="track">Track *</label>
+            <select id="track" name="track" required>
+              <option value="">-- Select a track --</option>
+              {% for t in tracks %}
+                <option value="{{ t.name }}" {% if form.get('track') == t.name %}selected{% endif %}>{{ t.name }}</option>
+              {% endfor %}
+            </select>
+            <div class="help">Choose the track that best fits your problem/solution.</div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Problem &amp; Solution (Meri Samasya, Mera Samadhan)</legend>
+        <div class="field">
+          <label for="problem_title">Project / Solution Title *</label>
+          <input type="text" id="problem_title" name="problem_title" value="{{ form.get('problem_title', '') }}" required>
+        </div>
+        <div class="field">
+          <label for="problem_description">Describe the problem and your solution idea *</label>
+          <textarea id="problem_description" name="problem_description" required>{{ form.get('problem_description', '') }}</textarea>
+          <div class="help">Explain the real problem from your home, school, or village and how your solution helps. Judges value thinking about the problem over technical polish.</div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>School &amp; Team Leader / Solo Student</legend>
+        <div class="field">
+          <label for="school_name">School name *</label>
+          <input type="text" id="school_name" name="school_name" value="{{ form.get('school_name', '') }}" required>
+        </div>
+        <div class="inline">
+          <div class="field">
+            <label for="leader_name">Leader / Student name *</label>
+            <input type="text" id="leader_name" name="leader_name" value="{{ form.get('leader_name', '') }}" required>
+          </div>
+          <div class="field">
+            <label for="leader_class">Class / Grade *</label>
+            <input type="text" id="leader_class" name="leader_class" value="{{ form.get('leader_class', '') }}" required>
+          </div>
+        </div>
+        <div class="inline">
+          <div class="field">
+            <label for="leader_contact">Contact number (optional)</label>
+            <input type="text" id="leader_contact" name="leader_contact" value="{{ form.get('leader_contact', '') }}">
+          </div>
+          <div class="field">
+            <label for="leader_email">Email (optional)</label>
+            <input type="email" id="leader_email" name="leader_email" value="{{ form.get('leader_email', '') }}">
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="group-members-fieldset">
+        <legend>Group Members (only for group registration)</legend>
+        <p class="help">For group registrations, add at least 1 additional member besides the leader. You can add as many members as needed. Leave an unused member row blank or remove it.</p>
+        <div id="members-container">
+          {% for i in member_indices %}
+            <div class="inline member-row" data-index="{{ i }}">
+              <div class="field">
+                <label for="member_{{ i }}_name">Member {{ loop.index }} name</label>
+                <input type="text" id="member_{{ i }}_name" name="member_{{ i }}_name" value="{{ form.get('member_' ~ i ~ '_name', '') }}">
+              </div>
+              <div class="field">
+                <label for="member_{{ i }}_class">Member {{ loop.index }} class / grade</label>
+                <input type="text" id="member_{{ i }}_class" name="member_{{ i }}_class" value="{{ form.get('member_' ~ i ~ '_class', '') }}">
+              </div>
+              <div class="field" style="flex:0 0 auto; align-self: flex-end;">
+                <button type="button" class="btn secondary small remove-member">Remove</button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="actions">
+          <button type="button" id="add-member" class="btn secondary small">Add another member</button>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" class="btn">Submit Registration</button>
+        <a href="{{ url_for('index') }}" class="btn secondary">Cancel</a>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    (function () {
+      var container = document.getElementById('members-container');
+      var addBtn = document.getElementById('add-member');
+      var teamType = document.getElementById('team_type');
+      var fieldset = document.getElementById('group-members-fieldset');
+
+      function getNextIndex() {
+        var rows = container.querySelectorAll('.member-row');
+        var maxIdx = 1;
+        rows.forEach(function (row) {
+          var idx = parseInt(row.getAttribute('data-index'), 10);
+          if (!isNaN(idx) && idx > maxIdx) maxIdx = idx;
+        });
+        return maxIdx + 1;
+      }
+
+      function renumberLabels() {
+        var rows = container.querySelectorAll('.member-row');
+        rows.forEach(function (row, idx) {
+          var labels = row.querySelectorAll('label');
+          if (labels[0]) labels[0].textContent = 'Member ' + (idx + 1) + ' name';
+          if (labels[1]) labels[1].textContent = 'Member ' + (idx + 1) + ' class / grade';
+        });
+      }
+
+      addBtn.addEventListener('click', function () {
+        var i = getNextIndex();
+        var row = document.createElement('div');
+        row.className = 'inline member-row';
+        row.setAttribute('data-index', i);
+        row.innerHTML =
+          '<div class="field">' +
+            '<label for="member_' + i + '_name">Member name</label>' +
+            '<input type="text" id="member_' + i + '_name" name="member_' + i + '_name" value="">' +
+          '</div>' +
+          '<div class="field">' +
+            '<label for="member_' + i + '_class">Member class / grade</label>' +
+            '<input type="text" id="member_' + i + '_class" name="member_' + i + '_class" value="">' +
+          '</div>' +
+          '<div class="field" style="flex:0 0 auto; align-self: flex-end;">' +
+            '<button type="button" class="btn secondary small remove-member">Remove</button>' +
+          '</div>';
+        container.appendChild(row);
+        renumberLabels();
+      });
+
+      container.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('remove-member')) {
+          var rows = container.querySelectorAll('.member-row');
+          if (rows.length > 1) {
+            e.target.closest('.member-row').remove();
+            renumberLabels();
+          } else {
+            var inputs = rows[0].querySelectorAll('input');
+            inputs.forEach(function (inp) { inp.value = ''; });
+          }
+        }
+      });
+
+      function toggleMembers() {
+        if (teamType.value === 'solo') {
+          fieldset.style.opacity = '0.6';
+        } else {
+          fieldset.style.opacity = '1';
+        }
+      }
+      teamType.addEventListener('change', toggleMembers);
+      toggleMembers();
+    })();
+  </script>
+{% endblock %}
