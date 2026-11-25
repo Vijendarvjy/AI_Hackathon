@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Manage Judges - AI Hackathon{% endblock %}
+{% block content %}
+  <section class="section">
+    <h2>Manage Judges</h2>
+    <p class="muted">Create judge accounts for the evaluation panel. Judges log in at <a href="{{ url_for('judge_login') }}">Judge Login</a> and score projects on the five parameters.</p>
+    <div class="actions">
+      <a class="btn secondary" href="{{ url_for('admin_dashboard') }}">Back to Dashboard</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card" style="max-width: 640px;">
+      <h3>Add a Judge</h3>
+      <form method="post">
+        <div class="field">
+          <label for="name">Judge name *</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="inline">
+          <div class="field">
+            <label for="username">Username *</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div class="field">
+            <label for="password">Password * (min 6 characters)</label>
+            <input type="password" id="password" name="password" minlength="6" required>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn">Create Judge Account</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Existing Judge Accounts</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Username</th><th>Created (UTC)</th></tr>
+        </thead>
+        <tbody>
+          {% for j in judges %}
+            <tr>
+              <td>{{ j.name }}</td>
+              <td><code>{{ j.username }}</code></td>
+              <td>{{ j.created_at }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="muted">No judge accounts yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

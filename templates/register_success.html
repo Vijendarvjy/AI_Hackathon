@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Registration Successful - AI Hackathon{% endblock %}
+{% block content %}
+  <section class="hero">
+    <h2>Registration Successful!</h2>
+    <p>Thank you for registering for the AI Hackathon. Please save your registration number for future reference.</p>
+    <p><span class="reg-number">{{ registration.registration_number }}</span></p>
+  </section>
+
+  <section class="card section">
+    <h3>Registration Details</h3>
+    <table>
+      <tr><th>Registration number</th><td>{{ registration.registration_number }}</td></tr>
+      <tr><th>Type</th><td>{{ registration.team_type|capitalize }}</td></tr>
+      <tr><th>Track</th><td>{{ registration.track }}</td></tr>
+      <tr><th>Project / Solution title</th><td>{{ registration.problem_title }}</td></tr>
+      <tr><th>Problem &amp; solution</th><td>{{ registration.problem_description }}</td></tr>
+      <tr><th>School</th><td>{{ registration.school_name }}</td></tr>
+      <tr><th>Leader / Student</th><td>{{ registration.leader_name }} (Class {{ registration.leader_class }})</td></tr>
+      {% if registration.leader_contact %}<tr><th>Contact</th><td>{{ registration.leader_contact }}</td></tr>{% endif %}
+      {% if registration.leader_email %}<tr><th>Email</th><td>{{ registration.leader_email }}</td></tr>{% endif %}
+    </table>
+
+    {% if members %}
+      <h4 style="margin-top:1rem;">Group Members</h4>
+      <ul>
+        {% for m in members %}
+          <li>{{ m.member_name }} (Class {{ m.member_class }})</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="actions">
+      <a class="btn" href="{{ url_for('register') }}">Register Another Team</a>
+      <a class="btn secondary" href="{{ url_for('index') }}">Back to Home</a>
+    </div>
+  </section>
+{% endblock %}

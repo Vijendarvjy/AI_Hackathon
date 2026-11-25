@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{% if role == 'admin' %}Admin Login{% else %}Judge Login{% endif %} - AI Hackathon{% endblock %}
+{% block content %}
+  <section class="section" style="max-width: 520px; margin: 1.5rem auto;">
+    <div class="card">
+      <h2>{% if role == 'admin' %}Admin Login{% else %}Judge Panel Login{% endif %}</h2>
+      <p class="muted">Sign in to {% if role == 'admin' %}manage registrations, judges, and view evaluation results{% else %}evaluate registered projects on five parameters{% endif %}.</p>
+
+      <form method="post">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn">Login</button>
+          <a href="{{ url_for('index') }}" class="btn secondary">Back</a>
+        </div>
+      </form>
+
+      <p class="small-note" style="margin-top:1rem;">
+        <strong>Default demo credentials (seeded on first run):</strong><br>
+        {% if role == 'admin' %}
+          Username: <code>admin</code> &nbsp; Password: <code>admin123</code>
+        {% else %}
+          Username: <code>judge</code> &nbsp; Password: <code>judge123</code>
+        {% endif %}
+        <br>Change or add accounts after login as needed.
+      </p>
+    </div>
+  </section>
+{% endblock %}
